@@ -45,13 +45,22 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
 
-  # TODO: Configure this function
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
       - http:
           method: post
           path: todos
+          cors: true
+          authorizer: Auth
+          request:
+            schema:
+              application/json: ${file(schemas/create-todo-request.json)}
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
 
   # TODO: Configure this function
   UpdateTodo:

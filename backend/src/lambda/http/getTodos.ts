@@ -4,14 +4,16 @@ import {
   APIGatewayProxyResult,
   APIGatewayProxyHandler
 } from 'aws-lambda'
-import { getAllTodoItems } from '../../businessLogic/todoItems'
+import * as middy from 'middy'
+import { cors } from 'middy/middlewares'
 import { TodoItem } from '../../models/TodoItem'
-import { createLogger } from '../../utils/logger'
+import { getAllTodoItems } from '../../businessLogic/todoItems'
 import { getUserId } from '../utils'
+import { createLogger } from '../../utils/logger'
 
 const logger = createLogger('getTodos')
 
-export const handler: APIGatewayProxyHandler = async (
+const getTodosHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   logger.info('Caller event', event)
@@ -20,11 +22,9 @@ export const handler: APIGatewayProxyHandler = async (
   const items: TodoItem[] = await getAllTodoItems(userId)
 
   return {
-    statusCode: 201,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true
-    },
+    statusCode: 200,
     body: JSON.stringify({ items })
   }
 }
+
+export const handler = middy(getTodosHandler).use(cors({ credenials: true }))
