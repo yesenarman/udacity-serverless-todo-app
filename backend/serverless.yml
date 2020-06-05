@@ -24,8 +24,7 @@ provider:
   environment:
     JWKS_URL: https://dev-rjulv14u.auth0.com/.well-known/jwks.json
     TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
-    TODO_ITEM_ID_INDEX: TodoItemId
-    TODO_ITEM_DUE_DATE_INDEX: TodoItemDueDate
+    TODO_ID_INDEX: TodoIdIndex
 
 functions:
   Auth:
@@ -99,9 +98,7 @@ resources:
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
-          - AttributeName: itemId
-            AttributeType: S
-          - AttributeName: dueDate
+          - AttributeName: todoId
             AttributeType: S
 
         KeySchema:
@@ -111,19 +108,11 @@ resources:
             KeyType: RANGE
 
         LocalSecondaryIndexes:
-          - IndexName: ${self:provider.environment.TODO_ITEM_ID_INDEX}
+          - IndexName: ${self:provider.environment.TODO_ID_INDEX}
             KeySchema:
               - AttributeName: userId
                 KeyType: HASH
-              - AttributeName: itemId
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          - IndexName: ${self:provider.environment.TODO_ITEM_DUE_DATE_INDEX}
-            KeySchema:
-              - AttributeName: userId
-                KeyType: HASH
-              - AttributeName: dueDate
+              - AttributeName: todoId
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
