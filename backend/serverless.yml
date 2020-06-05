@@ -1,19 +1,26 @@
 service:
   name: serverless-todo-app
 
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
-functions:
+  environment:
+    JWKS_URL: https://dev-rjulv14u.auth0.com/.well-known/jwks.json
 
+functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
@@ -24,6 +31,8 @@ functions:
       - http:
           method: get
           path: todos
+          cors: true
+          authorizer: Auth
 
   # TODO: Configure this function
   GetTodos:
