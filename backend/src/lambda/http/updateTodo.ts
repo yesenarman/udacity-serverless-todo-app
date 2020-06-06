@@ -1,13 +1,42 @@
 import 'source-map-support/register'
 
-import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyHandler,
+  APIGatewayProxyResult
+} from 'aws-lambda'
 
+import * as middy from 'middy'
+import { cors } from 'middy/middlewares'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
+import { updateTodoItem } from '../../businessLogic/todoItems'
+import { getUserId } from '../utils'
+import { createLogger } from '../../utils/logger'
 
-export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const todoId = event.pathParameters.todoId
-  const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+const logger = createLogger('updateTodo')
 
-  // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
-  return undefined
+const updateTodoHandler: APIGatewayProxyHandler = async function (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> {
+  logger.info('Caller event', event)
+
+  const userId = getUserId(event)
+  const todoId = event.pathParameters?.todoId
+  const updateTodoRequest = JSON.parse(event.body || '') as UpdateTodoRequest
+
+  if (!todoId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid todoId parameter' })
+    }
+  }
+
+  await updateTodoItem(userId, todoId, updateTodoRequest)
+
+  return {
+    statusCode: 200,
+    body: ''
+  }
 }
+
+export const handler = middy(updateTodoHandler).use(cors({ credenials: true }))
