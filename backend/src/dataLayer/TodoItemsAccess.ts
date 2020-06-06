@@ -30,6 +30,27 @@ export class TodoItemsAccess {
     return result.Items as TodoItem[]
   }
 
+  async findItemById(userId: string, todoId: string): Promise<TodoItem | null> {
+    const result = await this.docClient
+      .query({
+        TableName: this.todoItemsTable,
+        IndexName: this.todoIdIndex,
+        ConsistentRead: true,
+        KeyConditionExpression: 'userId = :userId and todoId = :todoId',
+        ExpressionAttributeValues: {
+          ':userId': userId,
+          ':todoId': todoId
+        }
+      })
+      .promise()
+
+    if (result.Count === 0 || !result.Items) {
+      return null
+    }
+
+    return result.Items[0] as TodoItem
+  }
+
   async createTodoItem(todoItem: TodoItem): Promise<TodoItem> {
     await this.docClient
       .put({
@@ -46,25 +67,12 @@ export class TodoItemsAccess {
     todoId: string,
     update: TodoUpdate
   ): Promise<boolean> {
-    const result = await this.docClient
-      .query({
-        TableName: this.todoItemsTable,
-        IndexName: this.todoIdIndex,
-        ConsistentRead: true,
-        ProjectionExpression: 'createdAt',
-        KeyConditionExpression: 'userId = :userId and todoId = :todoId',
-        ExpressionAttributeValues: {
-          ':userId': userId,
-          ':todoId': todoId
-        }
-      })
-      .promise()
-
-    if (result.Count === 0 || !result.Items) {
+    const todoItem = await this.findItemById(userId, todoId)
+    if (!todoItem) {
       return false
     }
 
-    const createdAt = result.Items[0].createdAt
+    const createdAt = todoItem.createdAt
 
     await this.docClient
       .update({

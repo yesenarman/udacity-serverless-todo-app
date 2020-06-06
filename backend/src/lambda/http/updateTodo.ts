@@ -31,7 +31,15 @@ const updateTodoHandler: APIGatewayProxyHandler = async function (
     }
   }
 
-  await updateTodoItem(userId, todoId, updateTodoRequest)
+  const updated = await updateTodoItem(userId, todoId, updateTodoRequest)
+  if (!updated) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({
+        error: 'Todo item does not exist'
+      })
+    }
+  }
 
   return {
     statusCode: 200,

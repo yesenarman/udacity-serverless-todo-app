@@ -31,6 +31,6 @@ export async function updateTodoItem(
   userId: string,
   todoId: string,
   updateTodoRequest: UpdateTodoRequest
-): Promise<void> {
-  await todoItemsAccess.updateTodoItem(userId, todoId, updateTodoRequest)
+): Promise<boolean> {
+  return await todoItemsAccess.updateTodoItem(userId, todoId, updateTodoRequest)
 }
