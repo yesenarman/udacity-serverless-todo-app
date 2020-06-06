@@ -23,6 +23,8 @@ const createTodoHandler: APIGatewayProxyHandler = async (
   const createTodoRequest = JSON.parse(event.body || '') as CreateTodoRequest
   const item = await createTodoItem(userId, createTodoRequest)
 
+  logger.info('Todo item was created', { userId, todoId: item.todoId })
+
   return {
     statusCode: 201,
     body: JSON.stringify({ item })

@@ -34,3 +34,10 @@ export async function updateTodoItem(
 ): Promise<boolean> {
   return await todoItemsAccess.updateTodoItem(userId, todoId, updateTodoRequest)
 }
+
+export async function deleteTodoItem(
+  userId: string,
+  todoId: string
+): Promise<void> {
+  await todoItemsAccess.deleteTodoItem(userId, todoId)
+}

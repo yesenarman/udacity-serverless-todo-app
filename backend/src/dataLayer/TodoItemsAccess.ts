@@ -93,6 +93,21 @@ export class TodoItemsAccess {
 
     return true
   }
+
+  async deleteTodoItem(userId: string, todoId: string): Promise<void> {
+    const todoItem = await this.findItemById(userId, todoId)
+    if (!todoItem) {
+      return
+    }
+
+    const createdAt = todoItem.createdAt
+    await this.docClient
+      .delete({
+        TableName: this.todoItemsTable,
+        Key: { userId, createdAt }
+      })
+      .promise()
+  }
 }
 
 function createDynamoDBClient() {

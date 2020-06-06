@@ -21,6 +21,8 @@ const getTodosHandler: APIGatewayProxyHandler = async (
   const userId = getUserId(event)
   const items: TodoItem[] = await getAllTodoItems(userId)
 
+  logger.info('Todo items fetched', { userId, count: items.length })
+
   return {
     statusCode: 200,
     body: JSON.stringify({ items })

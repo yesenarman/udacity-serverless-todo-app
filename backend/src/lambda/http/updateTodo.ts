@@ -5,7 +5,6 @@ import {
   APIGatewayProxyHandler,
   APIGatewayProxyResult
 } from 'aws-lambda'
-
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 import { UpdateTodoRequest } from '../../requests/UpdateTodoRequest'
@@ -33,6 +32,7 @@ const updateTodoHandler: APIGatewayProxyHandler = async function (
 
   const updated = await updateTodoItem(userId, todoId, updateTodoRequest)
   if (!updated) {
+    logger.info('Todo item does not exist', { userId, todoId })
     return {
       statusCode: 404,
       body: JSON.stringify({
@@ -40,6 +40,8 @@ const updateTodoHandler: APIGatewayProxyHandler = async function (
       })
     }
   }
+
+  logger.info('Todo item was updated', { userId, todoId })
 
   return {
     statusCode: 200,
