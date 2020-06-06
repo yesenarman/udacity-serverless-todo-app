@@ -25,6 +25,9 @@ provider:
     JWKS_URL: https://dev-rjulv14u.auth0.com/.well-known/jwks.json
     TODO_ITEMS_TABLE: TodoItems-${self:provider.stage}
     TODO_ID_INDEX: TodoIdIndex
+    ATTACHMENTS_S3_BUCKET: serverless-todo-app-arman-${self:provider.stage}
+    ATTACHMENT_UPLOAD_URL_EXPIRATION: 300
+    ATTACHMENT_DOWNLOAD_URL_EXPIRATION: 604800
 
 functions:
   Auth:
@@ -43,6 +46,11 @@ functions:
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}
+      - Effect: Allow
+        Action:
+          - s3:HeadObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -100,13 +108,23 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}/index/${self:provider.environment.TODO_ID_INDEX}
 
-  # TODO: Configure this function
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
       - http:
           method: post
           path: todos/{todoId}/attachment
+          cors: true
+          authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_ITEMS_TABLE}/index/${self:provider.environment.TODO_ID_INDEX}
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*
 
 resources:
   Resources:
@@ -150,3 +168,21 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
+
+    AttachmentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.ATTACHMENTS_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000

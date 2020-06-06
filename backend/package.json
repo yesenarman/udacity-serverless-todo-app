@@ -20,6 +20,7 @@
     "@types/node": "^10.14.4",
     "@types/uuid": "^8.0.0",
     "aws-sdk": "^2.433.0",
+    "cache-loader": "^4.1.0",
     "serverless-iam-roles-per-function": "^2.0.2",
     "serverless-plugin-canary-deployments": "^0.4.7",
     "serverless-webpack": "^5.2.0",

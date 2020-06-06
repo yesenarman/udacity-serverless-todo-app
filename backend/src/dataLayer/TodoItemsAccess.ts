@@ -15,8 +15,6 @@ export class TodoItemsAccess {
   ) {}
 
   async getAllTodoItems(userId: string): Promise<TodoItem[]> {
-    console.log('Getting all todo items')
-
     const result = await this.docClient
       .query({
         TableName: this.todoItemsTable,
